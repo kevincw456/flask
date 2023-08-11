@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
 
-def get_db_connection():
+def db_connection():
     conn = psycopg2.connect(host='containers-us-west-47.railway.app',
                             database='railway',
                             user=os.environ['postgres'],
