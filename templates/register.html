@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f8fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #1da1f2;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        #password-strength {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .register-button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            background-color: #1da1f2;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .register-button:hover {
+            background-color: #0077b6;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            outline: none;
+        }
+
+        .login-link {
+            color: #1da1f2;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .login-link:hover {
+            color: #0077b6;
+        }
+
+
+        .input-field.error {
+            border-color: red;
+            box-shadow: 0 0 4px red;
+        }
+    </style>
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+    <div class="container">
+        <h1>Register</h1>
+        <form action="{{ url_for('register') }}" method="post">
+            <input class="input-field {% if error_message %}error{% endif %}" type="text" name="username" placeholder="Username" required>
+            <input class="input-field" type="password" name="password" id="password" placeholder="Password" required>
+            <input class="input-field" type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <p id="password-strength"></p>
+            <button class="register-button" type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a class="login-link" href="{{ url_for('login') }}">Login</a></p>
+    </div>
+
+    <script>
+        const passwordField = document.getElementById('password');
+        const confirmPasswordField = document.querySelector('input[name="confirm_password"]');
+        const strengthIndicator = document.getElementById('password-strength');
+
+        passwordField.addEventListener('input', function () {
+            const password = passwordField.value;
+            let strength = '';
+
+            if (password.length >= 8 && /[A-Za-z]/.test(password) && /[0-9]/.test(password)) {
+                strength = 'Strong';
+            } else if (password.length >= 6) {
+                strength = 'Medium';
+            } else {
+                strength = 'Weak';
+            }
+
+            strengthIndicator.textContent = `Password Strength: ${strength}`;
+        });
+
+        confirmPasswordField.addEventListener('input', function () {
+            const password = passwordField.value;
+            const confirmPassword = confirmPasswordField.value;
+
+            if (password !== confirmPassword) {
+                confirmPasswordField.setCustomValidity("Passwords don't match");
+            } else {
+                confirmPasswordField.setCustomValidity('');
+            }
+        });
+    </script>
+{% endblock %}

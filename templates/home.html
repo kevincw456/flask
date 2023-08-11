@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    body, h1, h2, p, ul, li {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        color: #000;
+        background-color: #fff;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-section {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    h1 {
+        color: #333;
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+
+    .tweet-form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tweet-input {
+        width: 100%;
+        max-width: 600px;
+        height: 100px;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: none;
+        resize: none;
+        outline: none;
+    }
+
+    .tweet-button {
+        padding: 10px 20px;
+        background-color: #1da1f2;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .tweet-button:hover {
+        background-color: #1585d8;
+    }
+
+    .timeline-section {
+        margin-top: 30px;
+    }
+
+    h2 {
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .tweets-heading {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .tweet-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+        display: block;
+        padding: 12px 0;
+        margin-left: 120px;
+        text-decoration: none;
+        color: #000;
+        font-size: 20px;
+        margin-bottom: 60px;
+    }
+
+    .nav-link.active {
+        font-weight: bold;
+    }
+
+    h1 {
+        display: block;
+        padding: 12px 0;
+        margin-right: 600px;
+        text-decoration: none;
+        color: #000;
+        font-size: 20px;
+        margin-bottom: 60px;
+    }
+
+    .section-divider {
+        width: 100%;
+        border: none;
+        height: 2px;
+        background-color: #ccc;
+        margin: 10px 0;
+    }
+
+    main {
+        margin-left: 350px;
+        max-width: 600px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        margin-top: -40px;
+    }
+
+    .divider-button {
+        background-color: #fff;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 16px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .divider-button:hover {
+        background-color: #ccc;
+        color: #fff;
+    }
+
+    .tweet-button[disabled] {
+        background-color: #ccc;
+        color: #999;
+        cursor: not-allowed;
+    }
+
+
+</style>
+
+
+     <div class="user-section">
+        <h1>Home</h1>
+<!--        <div class="button-container">-->
+<!--            <div class="divider-button">For you</div>-->
+<!--            <div class="divider-button">Following</div>-->
+<!--        </div>-->
+        <hr class="section-divider">
+        <form class="tweet-form" action="{{ url_for('tweet') }}" method="post">
+            <textarea class="tweet-input" name="content" id="tweet-content" placeholder="What's happening?" oninput="toggleTweetButton()"></textarea>
+            <button class="tweet-button" id="tweet-button" type="submit" disabled>Tweet</button>
+        </form>
+    </div>
+ <hr class="section-divider">
+    <div class="timeline-section">
+        <ul class="tweet-list">
+            {% for tweet in tweets %}
+                <li class="tweet-item">
+                    <p><a href="{{ url_for('user_profile', user_id=tweet[2]|int) }}">{{ tweet[3] }}</a></p>
+                    <br>
+                    <p>{{ tweet[0] }}</p>
+                    <small class="tweet-time">{{ tweet[1] }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+<script>
+        function toggleTweetButton() {
+            var tweetContent = document.getElementById("tweet-content").value.trim();
+            var tweetButton = document.getElementById("tweet-button");
+
+            if (tweetContent === "") {
+                tweetButton.disabled = true;
+            } else {
+                tweetButton.disabled = false;
+            }
+        }
+    </script>
+{% endblock %}
+

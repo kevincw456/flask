@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <style>
+        main {
+    margin-left: 350px;
+    max-width: 600px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.section-divider {
+    width: 100%;
+    border: none;
+    height: 2px;
+    background-color: #ccc;
+    margin: 10px 0;
+}
+
+body {
+    font-family: "Helvetica Neue", sans-serif;
+    background-color: #f6f8fa;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-left: 20px;
+}
+
+.profile-details {
+    flex: 1;
+}
+
+.profile-actions {
+    display: flex;
+    align-items: center;
+}
+
+.follow-button {
+    background-color: #1da1f2;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.follow-button.following {
+    background-color: #e1e8ed;
+    color: #1da1f2;
+}
+
+.profile-tweets {
+    margin-top: 20px;
+}
+
+.tweets-heading {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.tweet-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.tweet-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.user-profile-link {
+    display: block;
+}
+
+.tweet-content {
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+
+.tweet-time {
+    font-size: 12px;
+    color: #666;
+}
+
+.like-button,
+.delete-comment-button,
+.comment-button {
+    background-color: transparent;
+    border: none;
+    color: #1da1f2;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+}
+
+.liked {
+    color: #e0245e;
+}
+
+.comment-container {
+    display: flex;
+    margin-top: 10px;
+}
+
+.comment-button {
+    margin-left: 10px;
+}
+
+.comment-item {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.delete-comment-button {
+    color: #e0245e;
+}
+
+    </style>
+<div class="container">
+    <br><br><br><br><br><br>
+    <hr class="section-divider">
+    <div class="profile-header">
+        <div class="profile-details">
+            <h2>{{ username }}</h2>
+            <div class="profile-bio">
+        {% if bio %}
+        <p class="bio-content">{{ bio }}</p>
+        {% else %}
+        <p class="bio-content">No bio available.</p>
+        {% endif %}
+    </div>
+            <h3>{{ registration_time }}</h3>
+        </div>
+        <div class="profile-actions">
+            {% if user_id != current_user_id %}
+                <form method="POST" action="{{ url_for('follow_user', user_id=user_id) }}">
+                    <input type="hidden" name="user_id" value="{{ user_id }}">
+                    {% if is_following %}
+                        <button class="follow-button following" type="submit">Followed</button>
+                    {% else %}
+                        <button class="follow-button" type="submit">Follow</button>
+                    {% endif %}
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-tweets">
+        <h3 class="tweets-heading">Tweets</h3>
+        <div class="tweet-list">
+            {% for tweet in tweets %}
+                <div class="tweet-item">
+                    <div class="tweet-header">
+                        <div class="user-profile-link">
+                            <a href="{{ url_for('user_profile', user_id=user_id) }}">{{ username }}</a>
+                        </div>
+                        <div class="tweet-content">{{ tweet[1] }}</div>
+                        <div class="tweet-time">{{ tweet[2] }}</div>
+                    </div>
+                    <div class="tweet-actions">
+                        <form method="POST" action="{{ url_for('user_profile', user_id=user_id) }}">
+                            <input type="hidden" name="user_id" value="{{ user_id }}">
+                            <input type="hidden" name="like" value="{{ tweet[0] }}">
+                            {% if tweet[4] %}
+                                <button class="like-button liked" type="submit"><i class="fas fa-heart"></i> Liked</button>
+                            {% else %}
+                                <button class="like-button" type="submit"><i class="far fa-heart"></i> Like</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                    <form class="comment-form" method="POST" action="{{ url_for('user_profile', user_id=user_id) }}">
+                        <input type="hidden" name="tweet_id" value="{{ tweet[0] }}">
+                        <input type="hidden" name="user_id" value="{{ current_user_id }}">
+                        <div class="comment-container">
+                            <input type="text" name="comment" placeholder="Write a comment...">
+                            <button class="comment-button" type="submit"><i class="far fa-comment"></i> Comment</button>
+                        </div>
+                    </form>
+                    <div class="comment-section">
+                        {% if tweet[3] > 0 %}
+                            <h4>Comments:</h4>
+                            {% for comment in tweet[5] %}
+                                <div class="comment-item">
+                                    <strong>{{ comment[1] }}</strong>: {{ comment[0] }}
+                                    {% if comment[1] == current_user_id %}
+                                        <form class="delete-comment-form" method="POST" action="{{ url_for('delete_comment', user_id=user_id, tweet_id=tweet[0], comment_id=comment[2]) }}">
+                                            <input type="hidden" name="comment_id" value="{{ comment[2] }}">
+                                            <button class="delete-comment-button" type="submit">Delete</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+
+{% endblock %}

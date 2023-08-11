@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Twitter</title>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    position: relative;
+}
+
+nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: #fff;
+    width: 200px;
+    height: 100%;
+    padding: 0;
+    margin-left: 20px;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+    margin: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+.search-form {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.search-form input[type="text"] {
+    padding: 5px;
+    font-size: 16px;
+    border-radius: 25px;
+}
+
+.search-form button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #1da1f2;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.search-form button:hover {
+    background-color: #0c85d0;
+}
+
+main {
+    margin-left: 350px;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 0;
+    text-decoration: none;
+    font-size: 20px;
+    margin-bottom: 30px;
+    margin-top: 60px;
+    width: 160px;
+}
+
+.nav-link.active {
+    font-weight: bold;
+}
+
+.logo-image {
+    position: absolute;
+    top: 20px;
+    left: 100px;
+    width: 40px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.image {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+.post-button {
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 25px;
+    padding: 10px 20px;
+}
+
+.post-button:hover {
+    background-color: #0056b3;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 400px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#search-results {
+    position: absolute;
+    top: 50px;
+    left: 0;
+    z-index: 999;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+#search-results div {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    transition: background-color 0.2s;
+}
+
+#search-results div:last-child {
+    border-bottom: none;
+}
+
+#search-results div:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+#search-results a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+#search-results a:hover {
+    text-decoration: underline;
+}
+</style>
+
+</head>
+<body>
+    <header>
+
+        <nav>
+            <img class="logo-image" src="static/X.png" alt="Logo">
+            <ul>
+                {% if 'user_id' in session %}
+                    <li>
+
+                        <a class="nav-link" href="{{ url_for('home') }}">
+                            <img src="static/home.png" alt="Home" class="image">
+                            Home
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="nav-link" href="{{ url_for('profile') }}">
+                            <img src="static/profile.png" alt="Profile" class="image">
+                            Profile
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <img src="static/logout.png" alt="logout" class="image">
+                            Logout</a>
+                    </li>
+                <li>
+                    <a id="postButton" class="nav-link">
+                        <div class="post-button">Post</div>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% if 'user_id' in session %}
+            <form class="search-form" method="GET" action="{{ url_for('render_search_results') }}">
+                <input type="text" name="query" placeholder="Search users" id="search-input">
+                <button type="submit">Search</button>
+                <div id="search-results"></div>
+            </form>
+        {% endif %}
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+
+        searchInput.addEventListener('input', function() {
+            const query = searchInput.value;
+
+            if (query.length > 0) {
+                fetch(`/search?query=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = '';
+                        data.results.forEach(result => {
+                            const resultItem = document.createElement('div');
+                            resultItem.textContent = result.username;
+                            resultItem.addEventListener('click', function() {
+                                searchInput.value = result.username;
+                                searchResults.innerHTML = '';
+                            });
+                            searchResults.appendChild(resultItem);
+                        });
+                    });
+            } else {
+                searchResults.innerHTML = '';
+            }
+        });
+    </script>
+</body>
+</html>
