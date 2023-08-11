@@ -6,10 +6,10 @@ import pymysql
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
-app.config['MYSQL_HOST'] = "localhost"
+app.config['MYSQL_HOST'] = "containers-us-west-31.railway.app"
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'lihao123'
-app.config['MYSQL_DB'] = 'twitter'
+app.config['MYSQL_PASSWORD'] = 'DdhAMyriQuH2WZpGDQJc'
+app.config['MYSQL_DB'] = 'railway'
 auth_plugin='mysql_native_password'
 
 db_connection = pymysql.connect(
