@@ -2,22 +2,18 @@ import datetime
 import random
 from flask import Flask, flash
 from flask import request, redirect, url_for, session
-import pymysql
+import psycopg2
+import os
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
-app.config['MYSQL_HOST'] = "containers-us-west-31.railway.app"
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'DdhAMyriQuH2WZpGDQJc'
-app.config['MYSQL_DB'] = 'railway'
-auth_plugin='mysql_native_password'
 
-db_connection = pymysql.connect(
-    host=app.config['MYSQL_HOST'],
-    user=app.config['MYSQL_USER'],
-    password=app.config['MYSQL_PASSWORD'],
-    database=app.config['MYSQL_DB']
-)
+def get_db_connection():
+    conn = psycopg2.connect(host='containers-us-west-47.railway.app',
+                            database='railway',
+                            user=os.environ['postgres'],
+                            password=os.environ['TBhriWSdWLhEUtPo2kIj'])
+    return conn
 
 @app.route('/')
 def index():
