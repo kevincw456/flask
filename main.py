@@ -8,12 +8,15 @@ import os
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
 
+
 def get_db_connection():
-    conn = psycopg2.connect(host='containers-us-west-47.railway.app',
-                            database='railway',
-                            user=os.environ['postgres'],
-                            password=os.environ['TBhriWSdWLhEUtPo2kIj'])
-    return conn
+    return psycopg2.connect(
+        dbname="railway",
+        user="postgres",
+        password="TBhriWSdWLhEUtPo2kIj",
+        host="containers-us-west-47.railway.app",
+        port="7493"
+    )
 
 @app.route('/')
 def index():
