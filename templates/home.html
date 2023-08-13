@@ -161,42 +161,38 @@
 </style>
 
 
-     <div class="user-section">
-        <h1>Home</h1>
-<!--        <div class="button-container">-->
-<!--            <div class="divider-button">For you</div>-->
-<!--            <div class="divider-button">Following</div>-->
-<!--        </div>-->
-        <hr class="section-divider">
-        <form class="tweet-form" action="{{ url_for('tweet') }}" method="post">
-            <textarea class="tweet-input" name="content" id="tweet-content" placeholder="What's happening?" oninput="toggleTweetButton()"></textarea>
-            <button class="tweet-button" id="tweet-button" type="submit" disabled>Tweet</button>
-        </form>
+<div class="user-section">
+    <h1>Home</h1>
+    <hr class="section-divider">
+    <form class="tweet-form" action="{{ url_for('tweet') }}" method="post">
+        <textarea class="tweet-input" name="content" id="tweet-content" placeholder="What's happening?" oninput="toggleTweetButton()"></textarea>
+        <button class="tweet-button" id="tweet-button" type="submit" disabled>Tweet</button>
+    </form>
+</div>
+<hr class="section-divider">
+<div class="timeline-section">
+    <div class="tweet-list">
+        {% for tweet in tweets %}
+            <div class="tweet-item">
+                <p><a href="{{ url_for('user_profile', user_id=tweet[2]|int) }}">{{ tweet[3] }}</a></p>
+                <br>
+                <p>{{ tweet[0] }}</p>
+                <small class="tweet-time">{{ tweet[1] }}</small>
+            </div>
+        {% endfor %}
     </div>
- <hr class="section-divider">
-    <div class="timeline-section">
-        <ul class="tweet-list">
-            {% for tweet in tweets %}
-                <li class="tweet-item">
-                    <p><a href="{{ url_for('user_profile', user_id=tweet[2]|int) }}">{{ tweet[3] }}</a></p>
-                    <br>
-                    <p>{{ tweet[0] }}</p>
-                    <small class="tweet-time">{{ tweet[1] }}</small>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
+</div>
 <script>
-        function toggleTweetButton() {
-            var tweetContent = document.getElementById("tweet-content").value.trim();
-            var tweetButton = document.getElementById("tweet-button");
+    function toggleTweetButton() {
+        var tweetContent = document.getElementById("tweet-content").value.trim();
+        var tweetButton = document.getElementById("tweet-button");
 
-            if (tweetContent === "") {
-                tweetButton.disabled = true;
-            } else {
-                tweetButton.disabled = false;
-            }
+        if (tweetContent === "") {
+            tweetButton.disabled = true;
+        } else {
+            tweetButton.disabled = false;
         }
-    </script>
+    }
+</script>
 {% endblock %}
 

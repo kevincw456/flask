@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
 
-def db_connection():
+def get_db_connection():
     conn = psycopg2.connect(host='containers-us-west-47.railway.app',
                             database='railway',
                             user=os.environ['postgres'],
@@ -27,7 +27,8 @@ def home():
     if 'user_id' in session:
         user_id = session['user_id']
 
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute('SELECT COUNT(*) FROM tweets')
         total_tweets = cur.fetchone()[0]
@@ -46,6 +47,7 @@ def home():
                     random_tweets.append((tweet_content, tweet_timestamp, tweet_user_id, tweet_username))
 
         cur.close()
+        conn.close()
         return render_template('home.html', tweets=random_tweets)
     return redirect(url_for('login'))
 
@@ -57,21 +59,26 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute("SELECT * FROM users WHERE username=%s", (username,))
         user = cur.fetchone()
 
         if user:
+            cur.close()
+            conn.close()
             return render_template('register.html', error_message="The username has been registered!")
 
         else:
             cur.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, password))
-            db_connection.commit()
+            conn.commit()
             cur.close()
+            conn.close()
             return redirect(url_for('login'))
 
     return render_template('register.html')
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -82,7 +89,8 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute("SELECT * FROM users WHERE username=%s AND password=%s", (username, password))
         user = cur.fetchone()
@@ -90,10 +98,12 @@ def login():
         if user:
             session['user_id'] = user[0]
             cur.close()
+            conn.close()
             return redirect(url_for('home'))
         else:
             error_message = 'Invalid username or password.'
             cur.close()
+            conn.close()
 
     return render_template('login.html', error_message=error_message)
 
@@ -105,22 +115,26 @@ def logout():
 
 
 
+
 @app.route('/tweet', methods=['POST'])
 def tweet():
     if 'user_id' in session:
         content = request.form['content']
         user_id = session['user_id']
 
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         timestamp = datetime.datetime.now()
 
         cur.execute("INSERT INTO tweets (content, user_id, timestamp) VALUES (%s, %s, %s)",
                     (content, user_id, timestamp))
-        db_connection.commit()
+        conn.commit()
         cur.close()
+        conn.close()
 
     return redirect(url_for('home'))
+
 
 
 
@@ -131,19 +145,23 @@ def edit_tweet(tweet_id):
         if request.method == 'POST':
             content = request.form['content']
 
-            cur = db_connection.cursor()
+            conn = get_db_connection()
+            cur = conn.cursor()
 
             cur.execute("UPDATE tweets SET content = %s WHERE id = %s AND user_id = %s", (content, tweet_id, user_id))
-            db_connection.commit()
+            conn.commit()
             cur.close()
+            conn.close()
 
             return redirect(url_for('profile'))
         else:
-            cur = db_connection.cursor()
+            conn = get_db_connection()
+            cur = conn.cursor()
 
             cur.execute("SELECT content FROM tweets WHERE id = %s AND user_id = %s", (tweet_id, user_id))
             tweet_data = cur.fetchone()
             cur.close()
+            conn.close()
 
             if tweet_data:
                 return render_template('edit_tweet.html', tweet_id=tweet_id, content=tweet_data[0])
@@ -156,31 +174,34 @@ def edit_tweet(tweet_id):
 
 
 
+
 @app.route('/delete_tweet/<int:tweet_id>', methods=['GET', 'POST'])
 def delete_tweet(tweet_id):
     if 'user_id' in session:
         user_id = session['user_id']
 
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute('DELETE FROM comments WHERE tweet_id=%s', (tweet_id,))
         cur.execute("DELETE FROM tweets WHERE id = %s AND user_id = %s", (tweet_id, user_id))
 
-        db_connection.commit()
+        conn.commit()
         cur.close()
+        conn.close()
 
         return redirect(url_for('profile'))
     else:
         return redirect(url_for('login'))
 
 
-# app.py
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     if 'user_id' in session:
         user_id = session['user_id']
 
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute('SELECT username, registration_time, bio FROM users WHERE id=%s', (user_id,))
         user_data = cur.fetchone()
@@ -214,11 +235,12 @@ def profile():
         if request.method == 'POST':
             new_bio = request.form['bio']
             cur.execute('UPDATE users SET bio=%s WHERE id=%s', (new_bio, user_id))
-            db_connection.commit()
+            conn.commit()
             user_data = list(user_data)
             user_data[2] = new_bio
 
         cur.close()
+        conn.close()
         return render_template('profile.html', username=user_data[0], registration_time=user_data[1],
                                bio=user_data[2], tweets=tweet_data, following_users=following_users,
                                liked_tweets=liked_tweets, user_id=user_id)
@@ -230,7 +252,8 @@ def profile():
 def edit_bio():
     if 'user_id' in session:
         user_id = session['user_id']
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute('SELECT bio FROM users WHERE id=%s', (user_id,))
         bio = cur.fetchone()[0]
@@ -238,11 +261,13 @@ def edit_bio():
         if request.method == 'POST':
             new_bio = request.form['bio']
             cur.execute('UPDATE users SET bio=%s WHERE id=%s', (new_bio, user_id))
-            db_connection.commit()
+            conn.commit()
             cur.close()
+            conn.close()
             return redirect(url_for('profile'))
 
         cur.close()
+        conn.close()
         return render_template('edit_bio.html', bio=bio)
     return redirect(url_for('login'))
 
@@ -251,7 +276,8 @@ def edit_bio():
 def user_profile(user_id):
     if 'user_id' in session:
         current_user_id = session['user_id']
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute('SELECT COUNT(*) FROM follows WHERE follower_id=%s AND following_id=%s',
                     (current_user_id, user_id))
@@ -267,14 +293,14 @@ def user_profile(user_id):
             if 'content' in request.form:
                 content = request.form['content']
                 cur.execute("INSERT INTO tweets (content, user_id) VALUES (%s, %s)", (content, current_user_id))
-                db_connection.commit()
+                conn.commit()
             elif 'comment' in request.form and 'tweet_id' in request.form and 'user_id' in request.form:
                 tweet_id = request.form['tweet_id']
                 comment_content = request.form['comment']
                 user_id = request.form['user_id']
                 cur.execute('INSERT INTO comments (tweet_id, content, user_id) VALUES (%s, %s, %s)',
                             (tweet_id, comment_content, user_id))
-                db_connection.commit()
+                conn.commit()
             elif 'like' in request.form:
                 tweet_id = request.form.get('like')
                 cur.execute('SELECT COUNT(*) FROM likes WHERE tweet_id=%s AND user_id=%s', (tweet_id, current_user_id))
@@ -285,7 +311,7 @@ def user_profile(user_id):
                 else:
                     cur.execute('DELETE FROM likes WHERE tweet_id=%s AND user_id=%s', (tweet_id, current_user_id))
 
-                db_connection.commit()
+                conn.commit()
 
         tweet_data = []
         for tweet in tweets:
@@ -306,6 +332,7 @@ def user_profile(user_id):
             tweet_data.append((tweet[0], tweet[1], tweet[2], comment_count, like_count, comments_with_username))
 
         cur.close()
+        conn.close()
 
         return render_template('user_profile.html', username=user_data[0], registration_time=user_data[1],
                                bio=user_data[2], tweets=tweet_data, user_id=user_id,
@@ -316,12 +343,14 @@ def user_profile(user_id):
 
 
 
+
 @app.route('/follow/<int:user_id>', methods=['POST'])
 def follow_user(user_id):
     if 'user_id' in session:
         current_user_id = session['user_id']
 
-        cur = db_connection.cursor()
+        conn = get_db_connection()
+        cur = conn.cursor()
 
         cur.execute('SELECT COUNT(*) FROM follows WHERE follower_id=%s AND following_id=%s',
                     (current_user_id, user_id))
@@ -330,21 +359,23 @@ def follow_user(user_id):
         if not relationship_exists:
             cur.execute('INSERT INTO follows (follower_id, following_id) VALUES (%s, %s)',
                         (current_user_id, user_id))
-            db_connection.commit()
+            conn.commit()
         else:
             cur.execute('DELETE FROM follows WHERE follower_id=%s AND following_id=%s',
                         (current_user_id, user_id))
-            db_connection.commit()
+            conn.commit()
 
         cur.execute('SELECT COUNT(*) FROM follows WHERE follower_id=%s AND following_id=%s',
                     (current_user_id, user_id))
         is_following = cur.fetchone()[0] > 0
 
         cur.close()
+        conn.close()
 
         return redirect(url_for('user_profile', user_id=user_id, is_following=is_following))
 
     return redirect(url_for('login'))
+
 
 
 
@@ -366,26 +397,36 @@ from flask import jsonify, render_template
 def search_results():
     query = request.args.get('query')
 
-    cur = db_connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
+
     cur.execute("SELECT id, username FROM users WHERE username LIKE %s", ('%' + query + '%',))
     results = cur.fetchall()
+
     cur.close()
+    conn.close()
 
     return jsonify({'results': [{'id': result[0], 'username': result[1]} for result in results]})
+
 
 @app.route('/render_search', methods=['GET'])
 def render_search_results():
     query = request.args.get('query')
 
-    cur = db_connection.cursor()
+    conn = get_db_connection()
+    cur = conn.cursor()
+
     cur.execute("SELECT id, username FROM users WHERE username LIKE %s", ('%' + query + '%',))
     results = cur.fetchall()
+
     cur.close()
+    conn.close()
 
     return render_template('search_results.html', query=query, results=results)
 
 
 
+
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True)
 

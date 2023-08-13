@@ -173,38 +173,37 @@ main {
 </head>
 <body>
     <header>
-
         <nav>
             <img class="logo-image" src="static/X.png" alt="Logo">
-            <ul>
+            <div>
                 {% if 'user_id' in session %}
-                    <li>
-
+                    <div>
                         <a class="nav-link" href="{{ url_for('home') }}">
                             <img src="static/home.png" alt="Home" class="image">
                             Home
                         </a>
-                    </li>
+                    </div>
 
-                    <li>
+                    <div>
                         <a class="nav-link" href="{{ url_for('profile') }}">
                             <img src="static/profile.png" alt="Profile" class="image">
                             Profile
                         </a>
-                    </li>
+                    </div>
 
-                    <li>
+                    <div>
                         <a class="nav-link" href="{{ url_for('logout') }}">
                             <img src="static/logout.png" alt="logout" class="image">
-                            Logout</a>
-                    </li>
-                <li>
-                    <a id="postButton" class="nav-link">
-                        <div class="post-button">Post</div>
-                    </a>
-                </li>
+                            Logout
+                        </a>
+                    </div>
+                    <div>
+                        <a id="postButton" class="nav-link">
+                            <div class="post-button">Post</div>
+                        </a>
+                    </div>
                 {% endif %}
-            </ul>
+            </div>
         </nav>
         {% if 'user_id' in session %}
             <form class="search-form" method="GET" action="{{ url_for('render_search_results') }}">

@@ -326,34 +326,34 @@ body {
 
     <div class="profile-tweets">
         <h2 class="tweets-heading">Tweets</h2><hr>
-        <ul class="tweet-list">
+        <div class="tweet-list">
             {% for tweet in tweets %}
-            <li class="tweet-item">
+            <div class="tweet-item">
                 <div class="tweet-content">
                     <p><a href="{{ url_for('user_profile', user_id=user_id) }}">{{ username }}</a></p>
                     <p>{{ tweet[1] }}</p>
                     <p class="tweet-time">{{ tweet[2] }}</p>
                     <div class="tweet-comments">
                         <h3>Comments</h3>
-                        <ul class="comment-list">
+                        <div class="comment-list">
                             {% for comment in tweet[4] %}
-                            <li class="comment-item">
+                            <div class="comment-item">
                                 <p class="comment-user">
                                     <a href="{{ url_for('user_profile', user_id=comment[2]) }}">{{ comment[1] }}</a>
                                 </p>
                                 <p>{{ comment[0] }}</p>
-                            </li>
+                            </div>
                             {% endfor %}
-                        </ul>
+                        </div>
                     </div>
                 </div>
                 <div class="tweet-actions">
                     <a href="{{ url_for('edit_tweet', tweet_id=tweet[0]) }}">Edit</a>
                     <a href="{{ url_for('delete_tweet', tweet_id=tweet[0]) }}">Delete</a>
                 </div>
-            </li>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
     </div>
 
 <div id="edit-bio-modal" class="modal" style="display: none;">
@@ -373,19 +373,18 @@ body {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 
-
 <script>
     $(document).ready(function() {
         var followButton = $("#following-btn");
 
-        var followingList = "{% for user in following_users %}<li><a href='{{ url_for('user_profile', user_id=user[0]) }}'>{{ user[1] }}</a></li>{% endfor %}";
+        var followingList = "{% for user in following_users %}<div><a href='{{ url_for('user_profile', user_id=user[0]) }}'>{{ user[1] }}</a></div>{% endfor %}";
 
         var followersButton = $("#followers-btn");
-        var followersList = "{% for follower in followers %}<li><a href='{{ url_for('user_profile', user_id=follower[0]) }}'>{{ follower[1] }}</a></li>{% endfor %}";
+        var followersList = "{% for follower in followers %}<div><a href='{{ url_for('user_profile', user_id=follower[0]) }}'>{{ follower[1] }}</a></div>{% endfor %}";
 
         followButton.click(function() {
             var popupWindow = window.open('', 'Following List', 'width=400,height=300,scrollbars=yes');
-            popupWindow.document.write('<html><head><title>Following List</title></head><body><div class="following-popup"><h3>Following</h3><ul class="following-list">' + followingList + '</ul><div class="close-button"><button id="close-btn">Close</button></div></div></body></html>');
+            popupWindow.document.write('<html><head><title>Following List</title></head><body><div class="following-popup"><h3>Following</h3><div class="following-list">' + followingList + '</div><div class="close-button"><button id="close-btn">Close</button></div></div></body></html>');
 
             popupWindow.document.getElementById("close-btn").addEventListener("click", function() {
                 popupWindow.close();
@@ -394,7 +393,7 @@ body {
 
         followersButton.click(function() {
             var popupWindow = window.open('', 'Followers List', 'width=400,height=300,scrollbars=yes');
-            popupWindow.document.write('<html><head><title>Followers List</title></head><body><div class="followers-popup"><h3>Followers</h3><ul class="followers-list">' + followersList + '</ul><div class="close-button"><button id="close-btn">Close</button></div></div></body></html>');
+            popupWindow.document.write('<html><head><title>Followers List</title></head><body><div class="followers-popup"><h3>Followers</h3><div class="followers-list">' + followersList + '</div><div class="close-button"><button id="close-btn">Close</button></div></div></body></html>');
 
             popupWindow.document.getElementById("close-btn").addEventListener("click", function() {
                 popupWindow.close();
@@ -466,11 +465,5 @@ body {
     }
 
 </script>
-
+</div>
 {% endblock %}
-
-
-
-
-
-
