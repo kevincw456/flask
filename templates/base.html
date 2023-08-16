@@ -168,32 +168,68 @@ main {
 #search-results a:hover {
     text-decoration: underline;
 }
+ .modal-header {
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px;
+    }
+
+    .close-button {
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .larger-modal-content {
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+ .tweet-textarea {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        outline: none;
+        resize: none;
+        border-radius: 10px;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+.tweet-button2 {
+        padding: 10px 20px;
+        background-color: #1da1f2;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
 </style>
 
 </head>
 <body>
     <header>
         <nav>
-            <img class="logo-image" src="static/X.png" alt="Logo">
+            <img class="logo-image" src="{{ url_for('static', filename='X.png') }}" alt="Logo">
             <div>
                 {% if 'user_id' in session %}
                     <div>
                         <a class="nav-link" href="{{ url_for('home') }}">
-                            <img src="static/home.png" alt="Home" class="image">
+                            <img src="{{ url_for('static', filename='home.png') }}" alt="Home" class="image">
                             Home
                         </a>
                     </div>
 
                     <div>
                         <a class="nav-link" href="{{ url_for('profile') }}">
-                            <img src="static/profile.png" alt="Profile" class="image">
+                            <img src="{{ url_for('static', filename='profile.png') }}" alt="Profile" class="image">
                             Profile
                         </a>
                     </div>
 
                     <div>
                         <a class="nav-link" href="{{ url_for('logout') }}">
-                            <img src="static/logout.png" alt="logout" class="image">
+                            <img src="{{ url_for('static', filename='logout.png') }}" alt="logout" class="image">
                             Logout
                         </a>
                     </div>
@@ -216,6 +252,17 @@ main {
     <main>
         {% block content %}{% endblock %}
     </main>
+    <div id="tweetModal" class="modal" style="display: none;">
+        <div class="modal-content larger-modal-content">
+            <div class="modal-header">
+                <span id="closeModalButton" class="close-button">×</span>
+            </div>
+            <textarea id="tweetContent" class="tweet-textarea" rows="6" placeholder="What's happening?" maxlength="280"></textarea>
+            <button id="sendTweetButton" class="tweet-button2">Tweet</button>
+        </div>
+    </div>
+
+
     <script>
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
@@ -243,5 +290,46 @@ main {
             }
         });
     </script>
-</body>
-</html>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const postButton = document.getElementById("postButton");
+        const tweetModal = document.getElementById("tweetModal");
+        const sendTweetButton = document.getElementById("sendTweetButton");
+        const closeModalButton = document.getElementById("closeModalButton");
+
+        postButton.addEventListener("click", function () {
+            tweetModal.style.display = "flex";
+        });
+
+        closeModalButton.addEventListener("click", function () {
+            tweetModal.style.display = "none";
+        });
+
+        sendTweetButton.addEventListener("click", function () {
+            const tweetContent = document.getElementById("tweetContent").value;
+
+            fetch('/post_tweet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `content=${encodeURIComponent(tweetContent)}`,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    console.log(data.message);
+                    tweetModal.style.display = "none";
+            location.reload();
+                } else if (data.error) {
+                    console.error(data.error);
+                }
+
+                tweetModal.style.display = "none";
+            })
+            .catch(error => {
+                console.error('Error sending tweet:', error);
+            });
+        });
+    });
+</script>
